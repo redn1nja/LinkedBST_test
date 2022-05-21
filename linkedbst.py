@@ -8,7 +8,8 @@ from bstnode import BSTNode
 from linkedstack import LinkedStack
 from linkedqueue import LinkedQueue
 from math import log, ceil
-
+from tqdm import tqdm
+from random import choice, shuffle
 
 class LinkedBST(AbstractCollection):
     """An link-based binary search tree implementation."""
@@ -47,6 +48,51 @@ class LinkedBST(AbstractCollection):
                     stack.push(node.right)
                 if node.left != None:
                     stack.push(node.left)
+
+    def inorder_iter(self):
+     
+        current = self._root
+        tree = []
+        stack = []
+        
+        while True:
+            
+            if current is not None:
+                stack.append(current)
+                current = current.left
+    
+            elif(stack):
+                current = stack.pop()
+                tree.append(current.data)
+
+                current = current.right
+    
+            else:
+                break
+        
+        return tree
+
+    def add_iter(self, item):
+        if self.isEmpty():
+            self._root=BSTNode(item)
+            self._size+=1
+        current = self._root
+        if current.data!= item:
+            while True:
+                if current.data > item:
+                    if current.left:
+                        current = current.left
+                    else:
+                        current.left = BSTNode(item)
+                        self._size+=1
+                        break
+                if current.data <= item:
+                    if current.right:
+                        current = current.right
+                    else:
+                        current.right = BSTNode(item)
+                        self._size+=1
+                        break
 
     def preorder(self):
         """Supports a preorder traversal on a view of self."""
@@ -100,6 +146,17 @@ class LinkedBST(AbstractCollection):
                 return recurse(node.right)
 
         return recurse(self._root)
+    
+    def find_iter(self, item):
+        current = self._root
+        while current:
+            if current.data == item:
+                return current.data
+            if current.data > item:
+                current = current.left
+            else:
+                current = current.right
+        return None
 
     # Mutator methods
     def clear(self):
@@ -288,7 +345,7 @@ class LinkedBST(AbstractCollection):
         Rebalances the tree.
         :return:
         '''
-        order = self.inorder()
+        order = self.inorder_iter()
         def recurs(lst):
             if len(lst) == 0:
                 return None
@@ -332,8 +389,8 @@ class LinkedBST(AbstractCollection):
         return None
 
         
-
-    def demo_bst(self, path):
+    @staticmethod
+    def demo_bst(path):
         """
         Demonstration of efficiency binary search tree for the search tasks.
         :param path:
@@ -341,41 +398,30 @@ class LinkedBST(AbstractCollection):
         :return:
         :rtype:
         """
-
-
-# t = LinkedBST([i for i in 'cafdhgesxyz'])
-# test = t._root.right
-# bott = t._root.right.left.right
-# print(t)
-# print(t.preorder())
-# print(t.postorder())
-# print(t.height())
-# print(t.is_balanced())
-# print(t.predecessor('f'))
-# print(t.successor('f'))
-
-# print(t.rangeFind(bott, test))
-# print(t.rangeFind('s', 'f'))
-# t.rebalance()
-# print(t)
+        wordstofind=[]
+        with open(path, mode = 'r', encoding='utf-8')as f:
+            words=f.readlines()
+        for i in range(1000):
+            wordstofind.append(choice(words))
+        for i in tqdm(range(len(wordstofind))):
+            for j in range(len(words)):
+                if wordstofind[i]==words[j]:
+                    break
+        tree = LinkedBST()
+        for word in words:
+            tree.add_iter(word)
+        for i in tqdm(range(len(wordstofind))):
+            tree.find_iter(wordstofind[i])
+        shuffle(words)
+        treer= LinkedBST()
+        for word in words:
+            treer.add_iter(word)
+        for i in tqdm(range(len(wordstofind))):
+            treer.find_iter(wordstofind[i])
+        tree.rebalance()
+        for i in tqdm(range(len(wordstofind))):
+            tree.find_iter(wordstofind[i])
 
 
 if __name__ == "__main__":
-    import random
-    random.seed(1337)
-    b = LinkedBST()
-    for i in range(30):
-        b.add(random.randint(1,100))
-    print(b)
-    print(b.is_balanced())
-    b.rebalance()
-    print(b.is_balanced())
-    print(b)
-    print(b.successor(5))
-    print(b.successor(55))
-    print(b.predecessor(65))
-    print(b.predecessor(47))
-    print(b.predecessor(5))
-    print(b.predecessor(100))
-    print(b.successor(100))
-    print(b.predecessor(9))
+    LinkedBST.demo_bst('test.txt')
